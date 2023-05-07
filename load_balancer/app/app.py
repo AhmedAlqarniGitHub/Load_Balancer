@@ -23,7 +23,8 @@ def next_available_server():
     while len(port_list) < 1:
         time.sleep(0.01)
 
-    next_port = port_list.pop(0)
+    next_port = port_list[1]
+    # port_list.append(next_port)
 
     return str(next_port)
 

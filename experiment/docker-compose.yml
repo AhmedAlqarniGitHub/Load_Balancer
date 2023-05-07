@@ -1,0 +1,33 @@
+version: '3.3'
+
+services:
+  nginx:
+    build: .
+    image: nginx:latest
+    ports:
+      - "80:80"
+    depends_on:
+      - load_balancer_1
+      - load_balancer_2
+    networks:
+      - load_balancer_network
+
+  load_balancer_1:
+    image: custom-load-balancer
+    volumes:
+      - ./db:/db
+    networks:
+      - load_balancer_network
+
+  load_balancer_2:
+    image: custom-load-balancer
+    volumes:
+      - ./db:/db
+    networks:
+      - load_balancer_network
+
+networks:
+  load_balancer_network: 
+
+volumes:
+  load_balancer_db:

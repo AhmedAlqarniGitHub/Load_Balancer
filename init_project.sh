@@ -41,12 +41,12 @@ echo "Building the load balancer and adding multiple factrial servers"
 # which will be used by the load balancer to know to what port
 # redirect clients
 
-echo '{"available_servers": ["5001", "5002", "5003", "5004", "5005"]}' > D/app/servers.json
+# echo '{"available_servers": ["5001", "5002", "5003", "5004", "5005"]}' > D/app/servers.json
 # echo '{"available_servers": ["5001", "5002", "5003"]}' > D/app/servers.json
 # echo '{"available_servers": ["5001"]}' > D/app/servers.json
 
 # Building the balancerapp container image 
-sudo docker build -t balancerapp D/app/.
+sudo docker build -t balancerapp load_balancer/app/.
 
 # Running the balancerapp container image 
 lb_container=`sudo docker run -d -p 8001:8001 --name load_balancer balancerapp`

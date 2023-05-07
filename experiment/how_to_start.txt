@@ -1,0 +1,38 @@
+# Load Balancer Experiment
+
+This is a sample load balancer project that demonstrates the use of Nginx and multiple Flask instances.
+
+## Prerequisites
+
+- Docker
+- Docker Compose
+- Python 3.x
+
+## Getting Started
+
+1. Clone the repository:
+git clone <repository-url>
+cd /experiment
+
+2. Create the SQLite database:
+python3 create_db.py
+
+3. Build and run the Docker containers:
+sudo docker-compose up -d
+
+
+## Usage
+
+- Visit `http://localhost/healthcheck` to check the health status of the Nginx server.
+- Visit `http://localhost/get_server` to retrieve the first alive server from the database.
+
+## Stopping the Containers
+
+To stop the containers, run the following command:
+sudo docker-compose down
+
+## Troubleshooting
+
+If you encounter issues with the containers, you can view the logs using:
+sudo docker-compose logs
+
