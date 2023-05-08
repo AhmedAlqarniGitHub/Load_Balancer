@@ -10,8 +10,10 @@ def create_database():
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS servers (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        ip TEXT NOT NULL,
-        is_alive INTEGER NOT NULL DEFAULT 1
+        base_url TEXT NOT NULL,
+        port TEXT NOT NULL,
+        is_alive INTEGER NOT NULL DEFAULT 1,
+        location_code TEXT NOT NULL DEFAULT "1"
     )
     ''')
 

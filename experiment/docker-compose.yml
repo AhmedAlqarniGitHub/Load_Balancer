@@ -13,6 +13,7 @@ services:
       - load_balancer_network
 
   load_balancer_1:
+    build: ./load_balancer/ # Update this path to the folder containing the Dockerfile for load_balancer_1
     image: custom-load-balancer
     volumes:
       - ./db:/db
@@ -20,11 +21,48 @@ services:
       - load_balancer_network
 
   load_balancer_2:
+    build: ./load_balancer/ # Update this path to the folder containing the Dockerfile for load_balancer_1
     image: custom-load-balancer
     volumes:
       - ./db:/db
     networks:
       - load_balancer_network
+
+  factapp_1:
+    image: factorial
+    ports:
+      - "5001:5000"
+    networks:
+      - load_balancer_network
+
+  factapp_2:
+    image: factorial
+    ports:
+      - "5002:5000"
+    networks:
+      - load_balancer_network
+
+  factapp_3:
+    image: factorial
+    ports:
+      - "5003:5000"
+    networks:
+      - load_balancer_network
+
+  factapp_4:
+    image: factorial
+    ports:
+      - "5004:5000"
+    networks:
+      - load_balancer_network
+
+  factapp_5:
+    image: factorial
+    ports:
+      - "5005:5000"
+    networks:
+      - load_balancer_network
+
 
 networks:
   load_balancer_network: 
