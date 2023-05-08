@@ -3,10 +3,12 @@ import sqlite3
 import os
 from collections import defaultdict
 import time
-import requests
+# import requests
 import sys
 
 app = Flask(__name__)
+DB_FILE = os.path.join("/db", "servers.db")
+
 def get_alive_servers():
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
@@ -24,7 +26,6 @@ client = {
     },
 }
 
-DB_FILE = os.path.join("/db", "servers.db")
 
 continent_distances = {
     "AS": {"AS": 0, "AF": 1, "EU": 1, "NA": 2, "AU": 1},
@@ -100,6 +101,25 @@ def get_next_server():
 @app.route('/healthcheck')
 def healthcheck():
     return 'OK', 200
+
+@app.route('/fill_db')
+def fill_db():
+
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+    cursor.execute(
+    '''
+        INSERT INTO servers ("id", "base_url", "port", "is_alive", "location_code") VALUES ('1', '127.0.0.1', '5001', '1', '1');
+    '''
+    )
+    cursor.execute(
+    '''
+        INSERT INTO servers ("id", "base_url", "port", "is_alive", "location_code") VALUES ('2', '127.0.0.1', '5002', '1', '1');
+    '''
+    )
+    alive_servers = cursor.fetchall()
+    conn.close()
+
 
 @app.route('/get_server')
 def get_server():
