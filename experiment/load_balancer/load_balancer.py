@@ -83,7 +83,7 @@ def get_next_server():
             if servers:
                 break
             time.sleep(1)
-
+    print(servers)
     selected = servers[0]
     selected_index = 0
     minimum_distance = get_distance(str(selected[2]), str(client["location"]["code"]))
@@ -144,7 +144,8 @@ def get_server():
     if not server:
         return jsonify({"error": "No alive servers found"}), 404
     
-    url = "http://" + server.base_url + ":" + server.port
+    url = "http://" + server[1] + ":" + server[2]
+    # url = "http://" + "127.0.0.1" + ":" + "5001"
 
     print('\nRedirecting client to: ' + url, flush=True)
 

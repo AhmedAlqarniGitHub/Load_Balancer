@@ -36,3 +36,6 @@ sudo docker-compose down
 If you encounter issues with the containers, you can view the logs using:
 sudo docker-compose logs
 
+## build docker image
+
+sudo docker build -t custom-load-balancer ./load_balancer/
