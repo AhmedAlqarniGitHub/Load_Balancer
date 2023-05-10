@@ -39,3 +39,7 @@ sudo docker-compose logs
 ## build docker image
 
 sudo docker build -t custom-load-balancer ./load_balancer/
+
+
+## remove all containers
+docker rm -f $(docker ps -a -q)

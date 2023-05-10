@@ -3,8 +3,9 @@ import sqlite3
 import os
 from collections import defaultdict
 import time
-# import requests
+import requests
 import sys
+import threading
 
 app = Flask(__name__)
 DB_FILE = os.path.join("/db", "servers.db")
@@ -26,45 +27,12 @@ client = {
     },
 }
 
-
-continent_distances = {
-    "AS": {"AS": 0, "AF": 1, "EU": 1, "NA": 2, "AU": 1},
-    "AF": {"AS": 1, "AF": 0, "EU": 1, "NA": 2, "AU": 2},
-    "EU": {"AS": 1, "AF": 1, "EU": 0, "NA": 1, "AU": 2},
-    "NA": {"AS": 2, "AF": 2, "EU": 1, "NA": 0, "AU": 1},
-    "AU": {"AS": 1, "AF": 2, "EU": 2, "NA": 1, "AU": 0},
-}
-
-def get_country_code_by_port(port):
-    if port == 5001:
-        return "AS"  # Asia
-    elif port == 5002:
-        return "AF"  # Africa
-    elif port == 5003:
-        return "EU"  # Europe
-    elif port == 5004:
-        return "NA"  # North America
-    elif port == 5005:
-        return "AU"  # Australia
-    else:
-        return None
-
-def get_client_country_code():
-    port = request.environ.get("REMOTE_PORT")
-    return get_country_code_by_port(port)
-
 def get_alive_servers():
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM servers")
     alive_servers = cursor.fetchall()
     conn.close()
-    # for server,index in alive_servers:
-    #     #ping server if not respond pop it
-    #     url = "http://" + server.base_url + ":" + server.port
-    #     is_up = requests.get(url).status_code == 200
-    #     if(is_up == False):
-    #        alive_servers.pop(index)
     return alive_servers
 
 def get_distance( code_1, code_2):
@@ -72,11 +40,12 @@ def get_distance( code_1, code_2):
     code_1 = int(code_1)
     code_2 = int(code_2)
     distance = abs(code_2 - code_1)
+    print("distance = ",distance)
     return distance    
 
 def get_next_server():
     global servers
-
+    print(servers)
     if not servers:
         while True:
             servers = get_alive_servers()
@@ -86,10 +55,10 @@ def get_next_server():
     print(servers)
     selected = servers[0]
     selected_index = 0
-    minimum_distance = get_distance(str(selected[2]), str(client["location"]["code"]))
+    minimum_distance = get_distance(str(selected[4]), str(client["location"]["code"]))
 
     for index, server in enumerate(servers):
-        distance = get_distance(str(server[2]), str(client["location"]["code"]))
+        distance = get_distance(str(server[4]), str(client["location"]["code"]))
         if distance < minimum_distance:
             selected = server
             selected_index = index
@@ -98,27 +67,41 @@ def get_next_server():
     servers.pop(selected_index)
     return selected
 
+# def checkServersHealth():
+    ## send a get request to all servers
+    ## false => change is_alive in db to be 0, remove from local list that called servers
+
+def checkServersHealth():
+    global servers
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+    print("hello bander")
+    # Iterate over servers
+    for i, server in enumerate(servers):
+        try:
+            # Send GET request to the server
+            response = requests.get(f'http://{server[1]}:{server[2]}', timeout=5)
+            
+            # Check response status
+            if response.status_code != 200:
+                raise Exception(f'Server returned status code {response.status_code}')
+            cursor.execute("UPDATE servers SET is_alive = 1 WHERE id = ?", (server[0],))
+            
+        except Exception as e:
+            print(f'Error checking health of server at {server[1]}:{server[2]}: {e}', file=sys.stderr)
+            
+            # Update is_alive status in the database
+            cursor.execute("UPDATE servers SET is_alive = 0 WHERE id = ?", (server[0],))
+            conn.commit()
+
+            # Remove server from servers list
+            servers.pop(i)
+    print ("hello list => ", servers)
+    conn.close()
+
 @app.route('/healthcheck')
 def healthcheck():
     return 'OK', 200
-
-@app.route('/fill_db')
-def fill_db():
-
-    conn = sqlite3.connect(DB_FILE)
-    cursor = conn.cursor()
-    cursor.execute(
-    '''
-        INSERT INTO servers ("id", "base_url", "port", "is_alive", "location_code") VALUES ('1', '127.0.0.1', '5001', '1', '1');
-    '''
-    )
-    cursor.execute(
-    '''
-        INSERT INTO servers ("id", "base_url", "port", "is_alive", "location_code") VALUES ('2', '127.0.0.1', '5002', '1', '1');
-    '''
-    )
-    alive_servers = cursor.fetchall()
-    conn.close()
 
 
 @app.route('/get_server')
@@ -136,9 +119,6 @@ def get_server():
             "code": code,
         },
     }
-
-    #127.0.0.0:5001
-    #5001
     server = get_next_server()
     print(server)
     if not server:
@@ -151,5 +131,18 @@ def get_server():
 
     return redirect(url, code=302)
 
+@app.route('/run')
+def run():
+    health_check_thread = threading.Thread(target=server_health_check_loop)
+    health_check_thread.start()
+
+
+def server_health_check_loop():
+    while True:
+        checkServersHealth()
+        time.sleep(10)
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=80)
+    
+
