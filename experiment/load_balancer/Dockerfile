@@ -8,6 +8,9 @@ WORKDIR /app
 COPY requirements.txt .
 COPY load_balancer.py .
 
+RUN apt-get update && apt-get install -y curl
+RUN apt-get update && apt-get install -y iputils-ping
+
 # Install the required packages
 RUN pip install --no-cache-dir -r requirements.txt
 

@@ -7,6 +7,7 @@ import requests
 import sys
 import threading
 import http.client
+import subprocess
 
 app = Flask(__name__)
 DB_FILE = os.path.join("/db", "servers.db")
@@ -81,7 +82,7 @@ def checkServersHealth():
     for i, server in enumerate(servers):
         try:
             # Send GET request to the server
-            response = requests.post(f'http://{server[1]}:{server[2]}')
+            response = requests.get(f'http://{server[1]}:{server[2]}')
             print( "reponse : ",response , file=sys.stderr)
             # Check response status
             if response.status_code != 200:
