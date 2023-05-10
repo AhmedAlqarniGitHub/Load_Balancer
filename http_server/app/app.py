@@ -18,26 +18,26 @@ def update_status(my_port):
                         str(my_port))
 
 @app.route("/")
-@app.route("/<int:my_port>")
-def factapp(my_port=None):
+# @app.route("/<int:my_port>")
+def factapp():
 
-    random_value = randint(100, 1000)
+    # random_value = randint(100, 1000)
 
-    print("random_value", random_key)
+    # print("random_value", random_key)
     
     # Calculating the factorial
-    res = str(factorial(key_value))
+    # res = str(factorial(key_value))
 
     # Building a string to display
-    return_string = "Factorial of " + str(random_value) + \
-                    " = " + str(res)
+    # return_string = "Factorial of " + str(random_value) + \
+    #                 " = " + str(res)
 
-    if my_port is not None:
-        update_res = str(update_status(my_port))
-        if update_res != '<Response [200]>':
-            return 'Failed to update port status :' + update_res
+    # if my_port is not None:
+        # update_res = str(update_status(my_port))
+        # if update_res != '<Response [200]>':
+            # return 'Failed to update port status :' + update_res
 
-    return return_string
+    return '<Response [200]>'
 
 if __name__ == "__main__":
     app.run()

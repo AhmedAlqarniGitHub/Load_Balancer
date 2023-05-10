@@ -6,6 +6,7 @@ import time
 import requests
 import sys
 import threading
+import http.client
 
 app = Flask(__name__)
 DB_FILE = os.path.join("/db", "servers.db")
@@ -80,8 +81,8 @@ def checkServersHealth():
     for i, server in enumerate(servers):
         try:
             # Send GET request to the server
-            response = requests.get(f'http://{server[1]}:{server[2]}', timeout=5)
-            
+            response = requests.post(f'http://{server[1]}:{server[2]}')
+            print( "reponse : ",response , file=sys.stderr)
             # Check response status
             if response.status_code != 200:
                 raise Exception(f'Server returned status code {response.status_code}')
@@ -131,18 +132,20 @@ def get_server():
 
     return redirect(url, code=302)
 
-@app.route('/run')
-def run():
-    health_check_thread = threading.Thread(target=server_health_check_loop)
-    health_check_thread.start()
+# @app.route('/run')
+# def run():
+#     health_check_thread = threading.Thread(target=server_health_check_loop)
+#     health_check_thread.start()
 
 
 def server_health_check_loop():
     while True:
         checkServersHealth()
-        time.sleep(10)
+        time.sleep(1)
 
 if __name__ == '__main__':
+    health_check_thread = threading.Thread(target=server_health_check_loop)
+    health_check_thread.start()
     app.run(host='0.0.0.0', port=80)
     
 
