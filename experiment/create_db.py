@@ -11,6 +11,7 @@ def create_database():
     CREATE TABLE IF NOT EXISTS servers (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         base_url TEXT NOT NULL,
+        host_ip TEXT NOT NULL,
         port TEXT NOT NULL,
         is_alive INTEGER NOT NULL DEFAULT 1,
         location_code TEXT NOT NULL DEFAULT "1"

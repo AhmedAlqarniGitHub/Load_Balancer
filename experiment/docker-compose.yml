@@ -17,6 +17,12 @@ services:
     image: custom-load-balancer
     volumes:
       - ./db:/db
+    depends_on:
+      - backend_server_1
+      - backend_server_2
+      - backend_server_3
+      - backend_server_4
+      - backend_server_5
     networks:
       - load_balancer_network
 
@@ -25,39 +31,45 @@ services:
     image: custom-load-balancer
     volumes:
       - ./db:/db
+    depends_on:
+      - backend_server_1
+      - backend_server_2
+      - backend_server_3
+      - backend_server_4
+      - backend_server_5
     networks:
       - load_balancer_network
 
-  factapp_1:
-    image: factorial
+  backend_server_1:
+    image: backend_server_image
     ports:
       - "5001:5000"
     networks:
       - load_balancer_network
 
-  factapp_2:
-    image: factorial
+  backend_server_2:
+    image: backend_server_image
     ports:
       - "5002:5000"
     networks:
       - load_balancer_network
 
-  factapp_3:
-    image: factorial
+  backend_server_3:
+    image: backend_server_image
     ports:
       - "5003:5000"
     networks:
       - load_balancer_network
 
-  factapp_4:
-    image: factorial
+  backend_server_4:
+    image: backend_server_image
     ports:
       - "5004:5000"
     networks:
       - load_balancer_network
 
-  factapp_5:
-    image: factorial
+  backend_server_5:
+    image: backend_server_image
     ports:
       - "5005:5000"
     networks:

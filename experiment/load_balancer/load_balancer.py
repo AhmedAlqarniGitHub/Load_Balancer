@@ -15,34 +15,51 @@ DB_FILE = os.path.join("/db", "servers.db")
 def get_alive_servers():
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM servers WHERE is_alive = 1")
+    cursor.execute("SELECT * FROM servers")
     alive_servers = cursor.fetchall()
     conn.close()
     return alive_servers
+
 
 servers = get_alive_servers()
 
 client = {
     "url": "http://127.0.0.0:5555",
     "location": {
-        "code": 7,
+        "code": "AS",
     },
 }
 
-def get_alive_servers():
-    conn = sqlite3.connect(DB_FILE)
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM servers")
-    alive_servers = cursor.fetchall()
-    conn.close()
-    return alive_servers
+# def get_alive_servers():
+#     conn = sqlite3.connect(DB_FILE)
+#     cursor = conn.cursor()
+#     cursor.execute("SELECT * FROM servers")
+#     alive_servers = cursor.fetchall()
+#     conn.close()
+#     return alive_servers
+
+def getContinentId(code):
+    if code == 'AF':
+        return 1
+    elif code == 'AN':
+        return 2
+    elif code == 'AS':
+        return 3
+    elif code == 'EU':
+        return 4
+    elif code == 'NA':
+        return 5
+    elif code == 'OC':
+        return 6
+    elif code == 'SA':
+        return 7
+    else:
+        return 0
 
 def get_distance( code_1, code_2):
-    #to be implemented 
-    code_1 = int(code_1)
-    code_2 = int(code_2)
+    code_1 = getContinentId(code_1)
+    code_2 = getContinentId(code_2)
     distance = abs(code_2 - code_1)
-    print("distance = ",distance)
     return distance    
 
 def get_next_server():
@@ -51,16 +68,16 @@ def get_next_server():
     if not servers:
         while True:
             servers = get_alive_servers()
+            checkServersHealth()
             if servers:
                 break
             time.sleep(1)
     print(servers)
     selected = servers[0]
     selected_index = 0
-    minimum_distance = get_distance(str(selected[4]), str(client["location"]["code"]))
-
+    minimum_distance = get_distance(str(selected[5]), str(client["location"]["code"]))
     for index, server in enumerate(servers):
-        distance = get_distance(str(server[4]), str(client["location"]["code"]))
+        distance = get_distance(str(server[5]), str(client["location"]["code"]))
         if distance < minimum_distance:
             selected = server
             selected_index = index
@@ -69,34 +86,25 @@ def get_next_server():
     servers.pop(selected_index)
     return selected
 
-# def checkServersHealth():
-    ## send a get request to all servers
-    ## false => change is_alive in db to be 0, remove from local list that called servers
-
 def checkServersHealth():
     global servers
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
-    print("hello bander")
-    # Iterate over servers
+    if not servers:
+        servers = get_alive_servers()
+
     for i, server in enumerate(servers):
         try:
-            # Send GET request to the server
-            response = requests.get(f'http://{server[1]}:{server[2]}')
-            print( "reponse : ",response , file=sys.stderr)
-            # Check response status
+            response = requests.get(f'http://{server[1]}:5000', timeout=5)
             if response.status_code != 200:
                 raise Exception(f'Server returned status code {response.status_code}')
+            print( f'http://{server[1]}:5000'+" is Alive Now ",file=sys.stderr)
             cursor.execute("UPDATE servers SET is_alive = 1 WHERE id = ?", (server[0],))
-            
+            conn.commit()
         except Exception as e:
-            print(f'Error checking health of server at {server[1]}:{server[2]}: {e}', file=sys.stderr)
-            
-            # Update is_alive status in the database
+            print(f'the following server is not alive : {server[1]}:5000',file=sys.stderr)
             cursor.execute("UPDATE servers SET is_alive = 0 WHERE id = ?", (server[0],))
             conn.commit()
-
-            # Remove server from servers list
             servers.pop(i)
     print ("hello list => ", servers)
     conn.close()
@@ -126,23 +134,17 @@ def get_server():
     if not server:
         return jsonify({"error": "No alive servers found"}), 404
     
-    url = "http://" + server[1] + ":" + server[2]
-    # url = "http://" + "127.0.0.1" + ":" + "5001"
+    url = "http://" + server[2] + ":" + server[3]
 
     print('\nRedirecting client to: ' + url, flush=True)
 
-    return redirect(url, code=302)
-
-# @app.route('/run')
-# def run():
-#     health_check_thread = threading.Thread(target=server_health_check_loop)
-#     health_check_thread.start()
+    return redirect(url, code=302) 
 
 
 def server_health_check_loop():
     while True:
         checkServersHealth()
-        time.sleep(1)
+        time.sleep(10)
 
 if __name__ == '__main__':
     health_check_thread = threading.Thread(target=server_health_check_loop)
