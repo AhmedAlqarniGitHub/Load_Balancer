@@ -23,6 +23,11 @@ services:
       - backend_server_3
       - backend_server_4
       - backend_server_5
+    deploy:
+      resources:
+        reservations:
+          cpus: '0.4'
+          memory: 15000M
     networks:
       - load_balancer_network
 
@@ -37,6 +42,11 @@ services:
       - backend_server_3
       - backend_server_4
       - backend_server_5
+    deploy:
+      resources:
+        reservations:
+          cpus: '0.4'
+          memory: 15000M
     networks:
       - load_balancer_network
 

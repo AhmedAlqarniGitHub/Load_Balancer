@@ -13,13 +13,20 @@ app = Flask(__name__)
 DB_FILE = os.path.join("/db", "servers.db")
 
 def get_alive_servers():
-    conn = sqlite3.connect(DB_FILE)
+    conn = sqlite3.connect(DB_FILE, timeout=15)
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM servers WHERE is_alive = 1")
+    alive_servers = cursor.fetchall()
+    conn.close()
+    return alive_servers
+
+def get_all_servers():
+    conn = sqlite3.connect(DB_FILE, timeout=15)
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM servers")
     alive_servers = cursor.fetchall()
     conn.close()
     return alive_servers
-
 
 servers = get_alive_servers()
 
@@ -83,17 +90,19 @@ def get_next_server():
             selected_index = index
             minimum_distance = distance
 
-    servers.pop(selected_index)
+    if not (not servers or len(servers) < selected_index):
+        servers.pop(selected_index)
     return selected
 
 def checkServersHealth():
     global servers
-    conn = sqlite3.connect(DB_FILE)
+    all_servers = servers
+    conn = sqlite3.connect(DB_FILE, timeout=15)
     cursor = conn.cursor()
     if not servers:
-        servers = get_alive_servers()
+        all_servers = get_all_servers()
 
-    for i, server in enumerate(servers):
+    for i, server in enumerate(all_servers):
         try:
             response = requests.get(f'http://{server[1]}:5000', timeout=5)
             if response.status_code != 200:
@@ -105,9 +114,10 @@ def checkServersHealth():
             print(f'the following server is not alive : {server[1]}:5000',file=sys.stderr)
             cursor.execute("UPDATE servers SET is_alive = 0 WHERE id = ?", (server[0],))
             conn.commit()
-            servers.pop(i)
-    print ("hello list => ", servers)
+            all_servers.pop(i)
+    print ("hello list => ", all_servers)
     conn.close()
+    servers = all_servers
 
 @app.route('/healthcheck')
 def healthcheck():
