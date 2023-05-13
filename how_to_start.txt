@@ -18,8 +18,11 @@ To stop the containers, run the following command:
 sudo docker-compose down
 
 ## Troubleshooting
-If you encounter issues with the containers, you can view the logs using:
+1- If you encounter issues with the containers, you can view the logs using:
 sudo docker-compose logs
+2- If you face issues building the container images, run the following command:
+rm  ~/.docker/config.json
+3- If you have an nginx running on port 80, you need to stop it first then run the run the step 3
 
 ## remove all containers
 docker rm -f $(docker ps -a -q)
