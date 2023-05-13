@@ -26,3 +26,14 @@ rm  ~/.docker/config.json
 
 ## remove all containers
 docker rm -f $(docker ps -a -q)
+
+## Testing:
+In order to test the system you need to install locust tool from the following doc:
+https://docs.locust.io/en/stable/installation.html
+
+to run it: 
+1- navigate to the folder test
+2- run the following command 
+    locust
+3- open the webpage from the url presented in the terminal and run the tests using the following doc:
+https://docs.locust.io/en/stable/quickstart.html#locust-s-web-interface
