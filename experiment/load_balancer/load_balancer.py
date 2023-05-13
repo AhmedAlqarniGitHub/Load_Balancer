@@ -37,14 +37,6 @@ client = {
     },
 }
 
-# def get_alive_servers():
-#     conn = sqlite3.connect(DB_FILE)
-#     cursor = conn.cursor()
-#     cursor.execute("SELECT * FROM servers")
-#     alive_servers = cursor.fetchall()
-#     conn.close()
-#     return alive_servers
-
 def getContinentId(code):
     if code == 'AF':
         return 1
@@ -63,12 +55,15 @@ def getContinentId(code):
     else:
         return 0
 
+# get the distance between two continent codes using the above algorithm
 def get_distance( code_1, code_2):
     code_1 = getContinentId(code_1)
     code_2 = getContinentId(code_2)
     distance = abs(code_2 - code_1)
     return distance    
 
+# get next server by applying the load balancing algorithm which is 
+# an enhanced round robin
 def get_next_server():
     global servers
     print(servers)
@@ -94,6 +89,8 @@ def get_next_server():
         servers.pop(selected_index)
     return selected
 
+# the check health algorithm will send request to each server and
+# then update its status based on the received response
 def checkServersHealth():
     global servers
     all_servers = servers
@@ -124,6 +121,7 @@ def healthcheck():
     return 'OK', 200
 
 
+# end point to get a server, you can pass a parameter with a continent code
 @app.route('/get_server')
 def get_server():
     global client
@@ -145,18 +143,18 @@ def get_server():
         return jsonify({"error": "No alive servers found"}), 404
     
     url = "http://" + server[2] + ":" + server[3]
-
     print('\nRedirecting client to: ' + url, flush=True)
-
     return redirect(url, code=302) 
 
 
 def server_health_check_loop():
+    # health check thread will keep checking the health of the servers each 10 s
     while True:
         checkServersHealth()
         time.sleep(10)
 
 if __name__ == '__main__':
+    # to run the check health thread
     health_check_thread = threading.Thread(target=server_health_check_loop)
     health_check_thread.start()
     app.run(host='0.0.0.0', port=80)

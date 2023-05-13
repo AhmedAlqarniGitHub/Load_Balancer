@@ -2,6 +2,7 @@ from flask import Flask, render_template_string
 
 app = Flask(__name__)
 
+# endpoint to check if server running
 @app.route("/")
 def backend_server():
     team_names = ["Bander AlGhamdi", "Ahmed AlQarni", "Waleed Alfaifi"]

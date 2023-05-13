@@ -13,7 +13,7 @@ services:
       - load_balancer_network
 
   load_balancer_1:
-    build: ./load_balancer/ # Update this path to the folder containing the Dockerfile for load_balancer_1
+    build: ./load_balancer/ 
     image: custom-load-balancer
     volumes:
       - ./db:/db
@@ -32,7 +32,7 @@ services:
       - load_balancer_network
 
   load_balancer_2:
-    build: ./load_balancer/ # Update this path to the folder containing the Dockerfile for load_balancer_1
+    build: ./load_balancer/ 
     image: custom-load-balancer
     volumes:
       - ./db:/db
